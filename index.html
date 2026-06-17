@@ -165,6 +165,21 @@
   .tile .tf{display:flex;align-items:center;justify-content:space-between;margin-top:7px}
   .tile .tf .d{font-family:var(--mono);font-size:11px}
   .tile .tf .d.up{color:var(--pr)} .tile .tf .d.down{color:var(--danger)} .tile .tf .d.flat{color:var(--faint)}
+  .ob-wrap{padding:6px 0 20px}
+  .ob-brand{display:flex;align-items:center;gap:8px;color:var(--accent);font-size:20px;font-weight:800;margin-bottom:18px}
+  .ob-title{font-size:26px;font-weight:800;color:var(--text);margin:2px 0 6px}
+  .ob-sub{font-size:14px;color:var(--muted);line-height:1.5;margin-bottom:6px}
+  .ob-sec{font-size:11px;color:var(--faint);letter-spacing:.16em;text-transform:uppercase;margin:22px 0 6px}
+  .ob-note{font-size:13px;color:var(--faint);line-height:1.5;margin-bottom:12px}
+  .ob-field{margin-bottom:13px}
+  .ob-field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+  .ob-input{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:11px;color:var(--text);font-size:16px;padding:13px 12px;font-family:var(--sans)}
+  .ob-input:focus{outline:none;border-color:var(--accent)}
+  .ob-lift{display:grid;grid-template-columns:1fr 118px;gap:12px;align-items:center;background:var(--surface);border:0.5px solid var(--line);border-radius:12px;padding:11px 13px;margin-bottom:9px}
+  .ob-lift .oln{font-size:14px;color:var(--text);font-weight:600;line-height:1.25}
+  .ob-lift .olh{font-size:11px;color:var(--faint);font-family:var(--mono);margin-top:3px}
+  .ob-lift .field input{font-size:16px;padding:11px 38px 11px 11px;text-align:right}
+  .ob-skip{display:block;width:100%;text-align:center;margin-top:14px;color:var(--faint);background:none;border:none;font-size:13px;cursor:pointer;font-family:var(--sans)}
   .dash-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:15px;margin-bottom:14px}
   .dash-card .dc-lab{font-size:11px;color:var(--faint);letter-spacing:.14em;text-transform:uppercase}
   .dash-card .dc-val{font-family:var(--mono);font-size:26px;font-weight:700;margin-top:4px;line-height:1}
@@ -258,7 +273,7 @@ const DB_KEY='carnet_db_v2';
 let DB={sessions:[],measures:[],nutrition:{},foods:[],customTemplates:[]};
 async function persist(){await Store.set(DB_KEY,JSON.stringify(DB));}
 async function loadDB(){const raw=await Store.get(DB_KEY);if(raw){try{DB=JSON.parse(raw);}catch(e){}}
-  DB.sessions=DB.sessions||[];DB.measures=DB.measures||[];DB.nutrition=DB.nutrition||{};DB.foods=DB.foods||[];DB.customTemplates=DB.customTemplates||[];
+  DB.sessions=DB.sessions||[];DB.measures=DB.measures||[];DB.nutrition=DB.nutrition||{};DB.foods=DB.foods||[];DB.customTemplates=DB.customTemplates||[];DB.profile=DB.profile||null;
   if(!DB.foods.length)DB.foods=DEFAULT_FOODS.slice();
   DB.customTemplates.forEach(t=>(t.ex||[]).forEach(e=>{if(e.pm&&!EX_INFO[e.id])EX_INFO[e.id]={n:e.n,pm:e.pm,sm:e.sm||[],rest:e.rest||90,inc:e.inc||2.5,cardio:e.cardio,fields:e.fields,met:e.met};}));
   DB.sessions.forEach(s=>(s.ex||[]).forEach(e=>{if(e.pm&&!EX_INFO[e.id])EX_INFO[e.id]={n:e.n,pm:e.pm,sm:e.sm||[],rest:e.rest||90,inc:e.inc||2.5,cardio:e.cardio,fields:e.fields,met:e.met};}));
@@ -460,7 +475,70 @@ function getTpl(key){if(TEMPLATES[key])return TEMPLATES[key];return DB.customTem
 function tplName(key){const t=getTpl(key);return t?t.name:key;}
 
 /* ===== State ===== */
-let TAB='bord',seanceSub='log',nutSub='day',draft=null,nutDate=null,builder=null,editMode=false,libMode=null;
+let TAB='bord',seanceSub='log',nutSub='day',draft=null,nutDate=null,builder=null,editMode=false,libMode=null,onboardActive=false;
+const ONBOARD_ANCHORS=[
+  {k:'bench',n:"Développé couché barre",hint:"poussée horizontale · ~5-8 reps",ph:'80'},
+  {k:'ohp',n:"Développé épaules / militaire",hint:"poussée verticale · ~6-8 reps",ph:'45'},
+  {k:'row',n:"Rowing barre",hint:"tirage horizontal · ~6-8 reps",ph:'80'},
+  {k:'pulldown',n:"Tirage vertical (poulie)",hint:"tirage vertical · ~8-10 reps",ph:'70'},
+  {k:'squat',n:"Squat (back, front ou hack)",hint:"quadriceps · ~5-8 reps",ph:'60'},
+  {k:'hinge',n:"Soulevé de terre / RDL",hint:"charnière hanches · ~6-10 reps",ph:'90'},
+];
+/* Calibration : poids de départ = poids de l'ancre × coefficient. Ratios indicatifs (point de départ, ajustable).
+   c:0 = exercice au poids du corps (0 charge ajoutée). Haltères = valeur par bras. Ancre absente → repli DEFAULT_ANCHORS. */
+const DEFAULT_ANCHORS={bench:60,ohp:35,row:60,pulldown:55,squat:60,hinge:75};
+const CALIB={
+  // ---- Programme (accessoires inclus) ----
+  'a-bench':{a:'bench',c:1.0},'a-trac':null,'a-fly':{a:'bench',c:0.45},'a-rowinc':{a:'row',c:0.42},
+  'a-lat':{a:'ohp',c:0.12},'a-triover':{a:'bench',c:0.30},'a-revfly':{a:'ohp',c:0.28},'a-preach':{a:'row',c:0.35},
+  'a-inccurl':{a:'row',c:0.15},'a-triuni':{a:'bench',c:0.15},
+  'b-dips':null,'b-rowh':{a:'row',c:1.0},'b-incsmith':{a:'bench',c:0.80},'b-tirinc':{a:'pulldown',c:0.80},
+  'b-lat':{a:'ohp',c:0.12},'b-tirsup':{a:'pulldown',c:0.95},'b-face':{a:'ohp',c:0.45},'b-triover':{a:'bench',c:0.30},
+  'b-tricord':{a:'bench',c:0.40},'b-mart':{a:'row',c:0.20},
+  'l-front':{a:'squat',c:1.0},'l-rdl':{a:'hinge',c:1.0},'l-legext':{a:'squat',c:0.55},'l-moll':{a:'squat',c:0.9},
+  'l-add':{a:'squat',c:0.6},'l-curl':{a:'hinge',c:0.40},
+  // ---- Bibliothèque : pectoraux ----
+  'lib-dc-barre':{a:'bench',c:1.0},'lib-dc-halt':{a:'bench',c:0.40},'lib-dc-inc':{a:'bench',c:0.82},
+  'lib-dc-inc-halt':{a:'bench',c:0.36},'lib-dc-inc-smith':{a:'bench',c:0.80},'lib-dc-decline':{a:'bench',c:1.02},
+  'lib-chest-press':{a:'bench',c:0.90},'lib-chest-press-inc':{a:'bench',c:0.72},'lib-decline-machine':{a:'bench',c:0.95},
+  'lib-dev-serre':{a:'bench',c:0.85},'lib-dips':{c:0},'lib-butterfly':{a:'bench',c:0.45},'lib-ecarte':{a:'bench',c:0.18},
+  'lib-ecarte-halt':{a:'bench',c:0.18},'lib-pompes':{c:0},
+  // ---- Dos ----
+  'lib-traction':{c:0},'lib-pull-assist':{a:'pulldown',c:0.80},'lib-tirage-v':{a:'pulldown',c:1.0},
+  'lib-tirage-large':{a:'pulldown',c:0.95},'lib-tirage-sup':{a:'pulldown',c:0.95},'lib-tirage-inc':{a:'pulldown',c:0.80},
+  'lib-rowing-barre':{a:'row',c:1.0},'lib-rowing-halt':{a:'row',c:0.42},'lib-rowing-inc':{a:'row',c:0.40},
+  'lib-rowing-machine':{a:'row',c:0.90},'lib-tbar':{a:'row',c:0.95},'lib-pendlay':{a:'row',c:0.95},
+  'lib-tirage-h':{a:'row',c:0.90},'lib-pullover':{a:'bench',c:0.30},'lib-rack-pull':{a:'hinge',c:1.2},'lib-shrug':{a:'row',c:1.1},
+  // ---- Épaules ----
+  'lib-dev-mil':{a:'ohp',c:1.0},'lib-dev-ep-halt':{a:'ohp',c:0.42},'lib-dev-ep-machine':{a:'ohp',c:0.95},
+  'lib-arnold':{a:'ohp',c:0.40},'lib-elev-lat':{a:'ohp',c:0.12},'lib-elev-lat-poulie':{a:'ohp',c:0.12},
+  'lib-elev-lat-machine':{a:'ohp',c:0.30},'lib-elev-front':{a:'ohp',c:0.14},'lib-oiseau':{a:'ohp',c:0.12},
+  'lib-rear-machine':{a:'ohp',c:0.35},'lib-facepull':{a:'ohp',c:0.45},'lib-butterfly-inv':{a:'ohp',c:0.30},
+  // ---- Biceps ----
+  'lib-curl-barre':{a:'row',c:0.45},'lib-curl-halt':{a:'row',c:0.18},'lib-curl-inc':{a:'row',c:0.15},
+  'lib-curl-pupitre':{a:'row',c:0.35},'lib-curl-marteau':{a:'row',c:0.20},'lib-curl-poulie':{a:'row',c:0.40},
+  'lib-curl-machine':{a:'row',c:0.45},'lib-curl-concentration':{a:'row',c:0.14},
+  // ---- Triceps ----
+  'lib-barre-front':{a:'bench',c:0.35},'lib-ext-corde':{a:'bench',c:0.40},'lib-pushdown-barre':{a:'bench',c:0.45},
+  'lib-ext-overhead':{a:'bench',c:0.30},'lib-tri-uni':{a:'bench',c:0.15},'lib-ext-machine':{a:'bench',c:0.45},
+  'lib-dips-machine':{a:'bench',c:0.55},'lib-kickback':{a:'bench',c:0.12},
+  // ---- Jambes ----
+  'lib-squat':{a:'squat',c:1.15},'lib-front-squat':{a:'squat',c:1.0},'lib-smith-squat':{a:'squat',c:1.05},
+  'lib-hack':{a:'squat',c:1.1},'lib-presse':{a:'squat',c:1.9},'lib-belt-squat':{a:'squat',c:1.1},
+  'lib-split-squat':{a:'squat',c:0.30},'lib-fente':{a:'squat',c:0.30},'lib-leg-ext':{a:'squat',c:0.55},
+  'lib-sdt':{a:'hinge',c:1.15},'lib-sdt-sumo':{a:'hinge',c:1.12},'lib-rdl':{a:'hinge',c:1.0},'lib-rdl-halt':{a:'hinge',c:0.45},
+  'lib-good-morning':{a:'hinge',c:0.50},'lib-leg-curl':{a:'hinge',c:0.40},'lib-leg-curl-assis':{a:'hinge',c:0.42},
+  'lib-hip-thrust':{a:'hinge',c:1.4},'lib-hyperext':{a:'hinge',c:0.25},'lib-add':{a:'squat',c:0.6},'lib-abd':{a:'squat',c:0.6},
+  'lib-mollet-d':{a:'squat',c:0.9},'lib-mollet-a':{a:'squat',c:0.5},'lib-mollet-presse':{a:'squat',c:1.4},
+  // ---- Tronc ----
+  'lib-crunch':{c:0},'lib-cable-crunch':{a:'pulldown',c:0.40},'lib-gainage':{c:0},'lib-releve':{c:0},
+  'lib-hanging-leg':{c:0},'lib-ab-wheel':{c:0},
+};
+function r25(x){return Math.round(x/2.5)*2.5;}
+function defaultWeight(exId){const cal=CALIB[exId];if(cal===null||cal===undefined)return null;
+  if(cal.c===0)return 0;
+  const an=(DB.profile&&DB.profile.anchors)||{};const base=(an[cal.a]!=null&&an[cal.a]>0)?an[cal.a]:DEFAULT_ANCHORS[cal.a];
+  if(base==null)return null;const w=r25(base*cal.c);return w>0?w:2.5;}
 const $=s=>document.querySelector(s);const view=$('#view');const savebar=$('#savebar');
 function todayISO(){const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);}
 function fmtDate(iso){const[y,m,d]=iso.split('-');return d+'/'+m+'/'+y.slice(2);}
@@ -505,7 +583,10 @@ function liveKcal(){if(!draft)return 0;const durSec=draft.start?(Date.now()-draf
 document.querySelectorAll('nav.tabs button').forEach(b=>b.onclick=()=>{TAB=b.dataset.tab;syncTabs();render();});
 function syncTabs(){document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.toggle('active',x.dataset.tab===TAB));}
 function gotoTab(t){TAB=t;syncTabs();render();}
-function render(){savebar.style.display='none';savebar.innerHTML='';stopClock();
+function render(){const navEl=document.querySelector('nav.tabs');
+  if(onboardActive){if(navEl)navEl.style.display='none';savebar.style.display='none';savebar.innerHTML='';stopClock();renderOnboarding();window.scrollTo(0,0);return;}
+  if(navEl)navEl.style.display='';
+  savebar.style.display='none';savebar.innerHTML='';stopClock();
   if(TAB==='bord'){draft=null;builder=null;renderDash();}
   else if(TAB==='seance'){draft?renderLogger():(builder?renderBuilder():(seanceSub==='log'?renderPicker():renderHistory()));}
   else if(TAB==='perf'){draft=null;builder=null;renderPerf();}
@@ -537,8 +618,11 @@ function slotInitEntries(slot){
   draft.entries[slot.id]=Array.from({length:n},()=>({w:s.w===''?'':String(s.w),r:s.r===''?'':String(s.r),done:false}));}
 
 window.startSession=function(k){const t=getTpl(k);if(!t)return;editMode=false;
+  const isProgram=!!TEMPLATES[k];
   draft={id:'s'+Date.now(),date:todayISO(),workout:k,srcName:t.name,ex:[],entries:{},note:'',_sugg:{},start:Date.now(),end:null};
-  t.ex.forEach(e=>{const slot=Object.assign({},e);draft.ex.push(slot);slotInitEntries(slot);});
+  t.ex.forEach(e=>{const slot=Object.assign({},e);
+    if(isProgram&&!e.cardio){const cw=defaultWeight(e.id);if(cw!=null)slot.tw=cw;}
+    draft.ex.push(slot);slotInitEntries(slot);});
   render();};
 
 /* ===== Séance: logger ===== */
@@ -621,13 +705,14 @@ window.setDoneC=function(id,i){const st=draft.entries[id][i];st.done=!st.done;re
 function uniqueSlotId(base,exceptIdx){const taken=draft.ex.filter((s,i)=>i!==exceptIdx).map(s=>s.id);if(taken.indexOf(base)<0)return base;let i=2;while(taken.indexOf(base+'-'+i)>=0)i++;return base+'-'+i;}
 function regEX(id,e){EX_INFO[id]={n:e.n,pm:e.pm,sm:e.sm,rest:e.rest,inc:e.inc,cardio:e.cardio,fields:e.fields,met:e.met};}
 window.exAddFromLib=function(libId){const e=LIB_BY_ID[libId];if(!e)return;const d=libDefaults(e);const id=uniqueSlotId(e.id,-1);
-  const slot={id,n:e.n,pm:e.pm,sm:e.sm,rest:e.rest,inc:e.inc,cardio:e.cardio,fields:e.fields,met:e.met,sets:d.sets,rep:d.rep,tw:null,g:null,straight:1};
+  const cw=e.cardio?null:defaultWeight(e.id);
+  const slot={id,n:e.n,pm:e.pm,sm:e.sm,rest:e.rest,inc:e.inc,cardio:e.cardio,fields:e.fields,met:e.met,sets:d.sets,rep:d.rep,tw:cw,g:null,straight:1};
   regEX(id,e);draft.ex.push(slot);slotInitEntries(slot);renderLogger();toast(e.n+' ajouté');};
 window.exReplace=function(slotId,libId){const idx=draft.ex.findIndex(s=>s.id===slotId);if(idx<0)return;const e=LIB_BY_ID[libId];if(!e)return;
   const old=draft.ex[idx];const id=uniqueSlotId(e.id,idx);
   delete draft.entries[slotId];delete draft._sugg[slotId];
   const d=libDefaults(e);
-  const slot={id,n:e.n,pm:e.pm,sm:e.sm,rest:e.rest,inc:e.inc,cardio:e.cardio,fields:e.fields,met:e.met,sets:e.cardio?(old.sets||1):old.sets,rep:e.cardio?'':(old.rep||d.rep),tw:null,g:old.g,straight:old.straight};
+  const slot={id,n:e.n,pm:e.pm,sm:e.sm,rest:e.rest,inc:e.inc,cardio:e.cardio,fields:e.fields,met:e.met,sets:e.cardio?(old.sets||1):old.sets,rep:e.cardio?'':(old.rep||d.rep),tw:e.cardio?null:defaultWeight(e.id),g:old.g,straight:old.straight};
   regEX(id,e);draft.ex[idx]=slot;slotInitEntries(slot);renderLogger();toast('Exercice remplacé');};
 window.exRemove=function(slotId){const slot=draft.ex.find(s=>s.id===slotId);if(!slot)return;
   const arr=draft.entries[slotId]||[];const hasData=arr.some(st=>num(st.w)!=null||num(st.r)!=null||num(st.dur)!=null);
@@ -850,6 +935,7 @@ function renderMeasures(){let h=`<div class="eyebrow">Nouvelle mesure</div><div 
     <span class="mv">${m.waist!=null&&m.waist!==''?m.waist+' <span class="ml">cm</span>':'–'}</span>
     <button class="x" onclick="delMeasure(${i})">×</button></div>`);}
   else h+=`<div class="empty">Aucune mesure.<br>Suis ton poids (–0,3 à –0,5 kg/sem) et ton tour de taille.</div>`;
+  h+=`<div style="margin-top:22px;border-top:1px solid var(--line);padding-top:16px"><button class="link" onclick="openProfile()">⚙ Modifier mon prénom &amp; mes repères de force</button></div>`;
   view.innerHTML=h;}
 window.addMeasure=async function(){const w=$('#m-w').value.trim(),t=$('#m-t').value.trim(),d=$('#m-d').value||todayISO();
   if(!w&&!t){toast('Renseigne au moins une valeur',true);return;}DB.measures.push({date:d,weight:w,waist:t});await persist();toast('Mesure enregistrée');render();};
@@ -876,7 +962,30 @@ function muscleVolume(sinceISO){const vol={};MUSCLE_ORDER.forEach(m=>vol[m]=0);
   return vol;}
 function tonnage(fromISO,toISO){let s=0;DB.sessions.forEach(se=>{if(se.date>=fromISO&&se.date<=toISO)Object.keys(se.entries).forEach(id=>{if(exInfo(id).cardio)return;(se.entries[id]||[]).forEach(st=>{const w=num(st.w),r=num(st.r);if(w!=null&&r!=null)s+=w*r;});});});return s;}
 function e1Series(id){return DB.sessions.filter(s=>(s.entries[id]||[]).some(st=>num(st.w)!=null&&num(st.r)!=null)).sort((a,b)=>(a.date+a.id).localeCompare(b.date+b.id)).map(s=>{let b=0;(s.entries[id]||[]).forEach(st=>{const o=e1rm(num(st.w),num(st.r));if(o>b)b=o;});return b;}).filter(v=>v>0);}
-function renderDash(){let h=`<div class="eyebrow">Tableau de bord</div>`;
+/* ===== Onboarding / profil ===== */
+function renderOnboarding(){const p=DB.profile||{};const an=p.anchors||{};
+  let h=`<div class="ob-wrap">
+    <div class="ob-brand"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20M5 8v8M5 8H3.5a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .5.5H5M19 8v8M19 8h1.5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5H19M8 6v12M16 6v12"/></svg><span>Forge</span></div>
+    <div class="ob-title">${p.name?'Modifier ton profil':'Bienvenue'}</div>
+    <div class="ob-sub">Deux infos rapides et l'app cale directement les poids proposés sur ton niveau. Tu pourras tout modifier plus tard dans l'onglet Mesures.</div>
+    <div class="ob-field"><label>Ton prénom</label><input class="ob-input" id="ob-name" placeholder="Prénom" value="${esc(p.name||'')}"></div>
+    <div class="ob-field"><label>Ton poids de corps — optionnel</label><div class="field"><input class="ob-input" id="ob-bw" inputmode="decimal" placeholder="ex. 85" style="padding-right:46px"><span class="unit">kg</span></div></div>
+    <div class="ob-sec">Tes repères de force</div>
+    <div class="ob-note">Indique le poids que tu utilises sur ces <b>mouvements de base</b>. À partir d'eux, l'app calcule un poids de départ pour les exercices de la même famille (ex. couché 100 → incliné ≈ 80). Laisse vide ce que tu ne fais pas. Ce ne sont que des points de départ : dès que tu logues, la progression prend le relais.</div>`;
+  ONBOARD_ANCHORS.forEach(l=>{h+=`<div class="ob-lift"><div><div class="oln">${esc(l.n)}</div><div class="olh">${l.hint}</div></div>
+    <div class="field"><input id="ob-anchor-${l.k}" inputmode="decimal" placeholder="${l.ph}" value="${an[l.k]!=null?an[l.k]:''}" style="padding-right:40px"><span class="unit">kg</span></div></div>`;});
+  h+=`<button class="btn btn-primary" style="width:100%;margin-top:18px" onclick="saveOnboard()">${p.name?'Enregistrer':"C'est parti"}</button>
+    <button class="ob-skip" onclick="skipOnboard()">${p.name?'Annuler':'Passer pour l\u2019instant'}</button></div>`;
+  view.innerHTML=h;}
+window.saveOnboard=async function(){const name=($('#ob-name').value||'').trim();const bw=num($('#ob-bw').value);
+  const anchors={};ONBOARD_ANCHORS.forEach(a=>{const v=num($('#ob-anchor-'+a.k).value);if(v!=null&&v>0)anchors[a.k]=v;});
+  DB.profile={name,onboarded:true,anchors};
+  if(bw!=null&&bw>0)DB.measures.push({date:todayISO(),weight:String(bw),waist:''});
+  await persist();onboardActive=false;TAB='bord';syncTabs();render();toast(name?('Bienvenue '+name+' !'):'Profil enregistré');};
+window.skipOnboard=async function(){DB.profile=DB.profile||{};DB.profile.onboarded=true;DB.profile.anchors=DB.profile.anchors||{};await persist();onboardActive=false;render();};
+window.openProfile=function(){onboardActive=true;render();};
+
+function renderDash(){const gname=(DB.profile&&DB.profile.name)?DB.profile.name:'';let h=`<div class="eyebrow">${gname?('Salut '+esc(gname)):'Tableau de bord'}</div>`;
   const mw=DB.measures.filter(m=>num(m.weight)!=null).sort((a,b)=>a.date.localeCompare(b.date));const wv=mw.map(m=>num(m.weight));
   const mt=DB.measures.filter(m=>num(m.waist)!=null).sort((a,b)=>a.date.localeCompare(b.date));const tv=mt.map(m=>num(m.waist));
   const since7=daysAgoISO(7),since30=daysAgoISO(30);
@@ -939,7 +1048,7 @@ function dataTools(){return `<div class="data-tools"><button onclick="exportData
 window.exportData=function(){const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='forge-sauvegarde-'+todayISO()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('Sauvegarde téléchargée');};
 window.importData=function(ev){const f=ev.target.files[0];if(!f)return;const rd=new FileReader();
   rd.onload=async()=>{try{const d=JSON.parse(rd.result);if(d&&(d.sessions||d.measures||d.nutrition)){
-    DB={sessions:d.sessions||[],measures:d.measures||[],nutrition:d.nutrition||{},foods:(d.foods&&d.foods.length)?d.foods:DEFAULT_FOODS.slice(),customTemplates:d.customTemplates||[]};
+    DB={sessions:d.sessions||[],measures:d.measures||[],nutrition:d.nutrition||{},foods:(d.foods&&d.foods.length)?d.foods:DEFAULT_FOODS.slice(),customTemplates:d.customTemplates||[],profile:d.profile||null};
     await persist();
     (d.customTemplates||[]).forEach(t=>(t.ex||[]).forEach(e=>{if(e.pm&&!EX_INFO[e.id])regEX(e.id,e);}));
     (d.sessions||[]).forEach(s=>(s.ex||[]).forEach(e=>{if(e.pm&&!EX_INFO[e.id])regEX(e.id,e);}));
@@ -947,7 +1056,7 @@ window.importData=function(ev){const f=ev.target.files[0];if(!f)return;const rd=
   rd.readAsText(f);};
 
 /* ===== Init ===== */
-(async function(){await loadDB();render();})();
+(async function(){await loadDB();if(!DB.profile||!DB.profile.onboarded)onboardActive=true;render();})();
 </script>
 </body>
 </html>
