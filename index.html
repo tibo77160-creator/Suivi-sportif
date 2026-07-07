@@ -233,6 +233,31 @@
   .be-tools .rm{color:var(--danger)}
   #libsheet{position:fixed;inset:0;z-index:60;background:rgba(10,9,7,.92);display:none;flex-direction:column;padding:16px 14px calc(16px + env(safe-area-inset-bottom))}
   #libsheet.show{display:flex}
+  .help-btn{margin-left:auto;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--muted);font-weight:800;font-size:15px;cursor:pointer;flex:0 0 auto;line-height:1}
+  .help-btn:active{background:var(--bg2)}
+  #helpsheet{position:fixed;inset:0;z-index:60;background:rgba(10,9,7,.96);display:none;flex-direction:column;padding:16px 14px calc(16px + env(safe-area-inset-bottom))}
+  #exhelpsheet{position:fixed;inset:0;z-index:61;background:rgba(10,9,7,.96);display:none;flex-direction:column;padding:16px 14px calc(16px + env(safe-area-inset-bottom))}
+  #helpsheet.show,#exhelpsheet.show{display:flex}
+  #helpsheet .ls-head,#exhelpsheet .ls-head{display:flex;justify-content:space-between;align-items:center;max-width:560px;margin:0 auto;width:100%}
+  .ex-name-row{display:flex;align-items:flex-start;gap:8px}
+  .ex-name-row .ex-name{flex:1}
+  .ex-help{flex:0 0 auto;width:24px;height:24px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--accent);font-weight:800;font-size:13px;cursor:pointer;line-height:1;margin-top:1px}
+  .ex-help:active{background:var(--bg2)}
+  .help-body ul{margin:2px 0 12px;padding-left:20px}
+  .help-body li{font-size:13.5px;line-height:1.5;color:var(--muted);margin-bottom:5px}
+  .help-body li b{color:var(--text);font-weight:650}
+  .eh-sec{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:16px 0 6px}
+  .eh-note{background:var(--bg2);border-left:3px solid var(--accent);border-radius:8px;padding:11px 13px;font-size:13px;line-height:1.5;color:var(--text);margin-bottom:8px}
+  .help-body{max-width:560px;margin:8px auto 0;width:100%;overflow-y:auto;flex:1}
+  .help-cat{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:20px 0 8px}
+  .help-body details{background:var(--surface);border:0.5px solid var(--line);border-radius:10px;margin-bottom:8px;overflow:hidden}
+  .help-body summary{padding:13px 14px;font-size:14.5px;font-weight:650;color:var(--text);cursor:pointer;list-style:none;position:relative}
+  .help-body summary::-webkit-details-marker{display:none}
+  .help-body summary::after{content:"+";position:absolute;right:14px;color:var(--accent);font-weight:800;font-size:17px}
+  .help-body details[open] summary::after{content:"−"}
+  .help-body details[open] summary{border-bottom:0.5px solid var(--line)}
+  .help-body p{padding:12px 14px 14px;font-size:13.5px;line-height:1.55;color:var(--muted);margin:0}
+  .help-body p b{color:var(--text);font-weight:650}
   #libsheet .ls-head{display:flex;justify-content:space-between;align-items:center;max-width:560px;margin:0 auto;width:100%}
   #libsheet input.search{width:100%;max-width:560px;margin:12px auto 8px;background:var(--surface);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:12px;font-size:15px;font-family:var(--sans)}
   #libsheet .ls-list{max-width:560px;margin:0 auto;width:100%;overflow-y:auto;flex:1}
@@ -257,7 +282,7 @@
 </head>
 <body>
 <header class="top">
-  <div class="brand"><span class="logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12h20M5 8v8M5 8H3.5a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .5.5H5M19 8v8M19 8h1.5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5H19M8 6v12M16 6v12"/></svg></span><h1>Forge</h1><span class="sub">entraînement · nutrition</span></div>
+  <div class="brand"><span class="logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12h20M5 8v8M5 8H3.5a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .5.5H5M19 8v8M19 8h1.5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5H19M8 6v12M16 6v12"/></svg></span><h1>Forge</h1><span class="sub">entraînement · nutrition</span><button class="help-btn" onclick="openHelp()" aria-label="Aide">?</button></div>
   <nav class="tabs">
     <button data-tab="bord" class="active">Tableau de bord</button>
     <button data-tab="seance">Séance</button>
@@ -273,12 +298,45 @@
 <div id="prflash"><div class="pf-card"><div class="pf-emoji">🏆</div><div class="pf-t">Nouveau record</div><div id="pf-lines"></div><button onclick="document.getElementById('prflash').classList.remove('show')">Continuer</button></div></div>
 <div id="libsheet"><div class="ls-head"><div style="font-weight:700;font-size:16px" id="lib-title">Ajouter un exercice</div><button class="link" onclick="closeLib()">Fermer</button></div>
   <input class="search" id="lib-search" placeholder="Rechercher (ex. squat, curl, vélo…)" oninput="renderLibList()"><div class="ls-list" id="lib-list"></div></div>
+<div id="helpsheet"><div class="ls-head"><div style="font-weight:700;font-size:16px">Aide &amp; lexique</div><button class="link" onclick="closeHelp()">Fermer</button></div>
+  <div class="help-body">
+    <div class="help-cat">Comprendre Forge</div>
+    <details><summary>Le questionnaire &amp; ton programme</summary><p>À l'ouverture, Forge te demande ton niveau, ton nombre de séances par semaine, ton temps par séance et tes muscles prioritaires. Il en déduit un <b>split</b> (Full body, Upper/Lower, Push/Pull/Legs selon les jours) et remplit chaque séance en visant un volume d'environ <b>10 à 20 séries par muscle et par semaine</b> et une fréquence de <b>2× par semaine</b> quand c'est possible — deux repères parmi les mieux établis pour progresser. Tu peux régénérer ton programme à tout moment.</p></details>
+    <details><summary>Poids de départ calibrés</summary><p>À partir de quelques mouvements de base que tu renseignes (couché, tirage, squat, soulevé…), Forge estime un poids de départ pour tous les exercices de la même famille via des ratios (ex. incliné ≈ 80 % du couché). Ce ne sont que des <b>points de départ indicatifs</b> : dès que tu logues une série, la progression prend le relais et remplace l'estimation par tes vrais chiffres.</p></details>
+    <details><summary>Montée en gamme vs séries effectives</summary><p>Sous chaque exercice lourd, Forge propose une <b>montée en gamme</b> (séries d'échauffement) : charges croissantes et répétitions décroissantes pour préparer le mouvement <b>sans te fatiguer</b>. Elle est <b>exclue de tes stats et de tes records</b> — seules tes <b>séries effectives</b> comptent. Les isolations et le poids du corps n'en ont pas.</p></details>
+    <details><summary>Progression suggérée (double progression)</summary><p>Forge te suggère la charge et les reps de ta prochaine série à partir de ta dernière séance. Le principe est la <b>double progression</b> : tu montes d'abord les répétitions jusqu'en haut de ta fourchette (ex. 6→8), puis tu ajoutes du poids et tu repars en bas de la fourchette.</p></details>
+    <details><summary>Quoi saisir comme poids ?</summary><p>Une ligne sous chaque exercice te le rappelle. En résumé : <b>barre</b> = poids total (barre 20 kg + disques) ; <b>Smith</b> = total (barre guidée ~10 kg + disques) ; <b>haltère</b> = un seul haltère (pas le cumul) ; <b>machine/poulie</b> = la charge réglée, sans le poids propre de la machine ; <b>poids du corps</b> = le lest ajouté (0 = à vide). L'essentiel est d'être <b>constant sur un même exercice</b>.</p></details>
+    <details><summary>Cardio &amp; calories</summary><p>Les exercices cardio se saisissent par durée (et vitesse/pente/résistance selon l'appareil). La dépense en kcal affichée en fin de séance est une <b>estimation</b> (basée sur la durée et l'intensité), pas une mesure — utile pour suivre une tendance, pas un chiffre exact.</p></details>
+    <details><summary>Tes données &amp; sauvegarde</summary><p>Tes données sont stockées <b>sur ton appareil</b> (dans le navigateur), pas sur un serveur. Le bouton <b>Exporter</b> crée un fichier JSON = une copie de toutes tes données ; garde-en une de temps en temps, surtout avant une mise à jour ou un changement d'appareil. C'est ta seule sauvegarde portable.</p></details>
+
+    <div class="help-cat">Lexique</div>
+    <details><summary>1RM / e1RM</summary><p>Le <b>1RM</b> est la charge maximale que tu peux soulever une seule fois. Le <b>e1RM</b> (« estimé ») est un calcul à partir d'une série à plusieurs reps (ex. 80 kg × 5) — pratique pour suivre ta force sans jamais tester ton vrai max, mais ça reste une <b>estimation</b>.</p></details>
+    <details><summary>RIR / RPE</summary><p><b>RIR</b> = répétitions en réserve (combien tu aurais pu en faire de plus). <b>RPE</b> = difficulté ressentie sur 10. « 2 RIR » ou « RPE 8 » veulent dire « il me restait ~2 reps ». Utile pour doser l'intensité sans aller à l'échec systématiquement.</p></details>
+    <details><summary>Compound vs isolation</summary><p>Un <b>mouvement composé (compound)</b> fait travailler plusieurs articulations et muscles (squat, couché, tractions) — c'est le cœur d'une séance. Une <b>isolation</b> cible un seul muscle (curl, élévation latérale) — pour compléter et cibler un point faible.</p></details>
+    <details><summary>Superset</summary><p>Deux exercices enchaînés avec peu ou pas de repos entre eux. En <b>antagonistes</b> (ex. biceps/triceps, pousser/tirer), ils ne se gênent pas et font gagner du temps sans perte de performance.</p></details>
+    <details><summary>Série effective &amp; montée en gamme</summary><p>La <b>série effective</b> est une série qui compte pour ta progression (proche de l'effort cible). La <b>montée en gamme</b> (échauffement) sert seulement à préparer le mouvement et ne compte pas.</p></details>
+    <details><summary>Volume &amp; fréquence</summary><p>Le <b>volume</b> = nombre de séries effectives par muscle (souvent sur la semaine) ; ~10-20 séries/muscle/semaine est une zone productive courante. La <b>fréquence</b> = combien de fois par semaine tu entraînes un muscle ; 2× tend à mieux marcher qu'1× à volume égal.</p></details>
+    <details><summary>Chaîne postérieure &amp; hinge</summary><p>La <b>chaîne postérieure</b> regroupe l'arrière du corps (ischios, fessiers, lombaires, dos). Le <b>hinge</b> (charnière de hanche) est le mouvement de flexion aux hanches dos neutre (soulevé de terre, RDL) qui la sollicite.</p></details>
+    <details><summary>Amplitude, tempo, deload</summary><p><b>Amplitude complète</b> : réaliser le mouvement sur toute sa course. <b>Tempo</b> : la vitesse d'exécution (ex. 3 s en descente). <b>Deload</b> : une semaine allégée volontairement pour récupérer et repartir plus fort.</p></details>
+
+    <div class="help-cat">Bonnes pratiques</div>
+    <details><summary>Échauffe-toi progressivement</summary><p>Quelques minutes de cardio léger + une montée en charge sur ton premier gros mouvement suffisent. Une fois un muscle sollicité par les exercices lourds, il est déjà chaud pour la suite — pas besoin de tout ré-échauffer.</p></details>
+    <details><summary>La technique avant la charge</summary><p>Ajouter du poids sur une exécution imparfaite ne fait qu'ancrer le défaut et augmenter le risque. Maîtrise le mouvement à charge modérée avant de charger.</p></details>
+    <details><summary>Progresse graduellement</summary><p>De petites hausses régulières (2,5 kg, une rep de plus) battent les grands sauts. La régularité sur des mois pèse bien plus qu'une séance parfaite isolée.</p></details>
+    <details><summary>Récupération &amp; sommeil</summary><p>Le muscle se construit au repos, pas seulement à l'entraînement. Sommeil, alimentation et jours de repos font partie du programme, pas à côté.</p></details>
+    <details><summary>Douleur ≠ effort</summary><p>La sensation de travail musculaire est normale ; une <b>douleur articulaire, au dos ou qui persiste</b> ne l'est pas. Dans ce cas, on ne force pas dans la douleur, et une gêne récurrente mérite l'avis d'un <b>kiné ou médecin du sport</b> — Forge est un carnet, pas un avis médical.</p></details>
+
+    <div class="help-cat">Familles d'exercices</div>
+    <details><summary>Comment choisir une variante</summary><p>Chaque exercice appartient à un <b>schéma de mouvement</b> : poussée horizontale (couché, dips), poussée verticale (développé épaules), tirage horizontal (rowing), tirage vertical (tractions, tirage poulie), flexion de jambe/quadriceps (squat, presse, hack), charnière de hanche/postérieure (soulevé, RDL), et isolations. Si tu n'as pas fait exactement le même exercice que d'habitude, choisis la <b>variante précise</b> dans la bibliothèque (ex. « rowing machine à disques » vs « à sélecteur ») plutôt qu'un exercice approchant : tes charges resteront comparables d'une séance à l'autre.</p></details>
+  </div></div>
+<div id="exhelpsheet"><div class="ls-head"><div style="font-weight:700;font-size:16px" id="exhelp-title">Exercice</div><button class="link" onclick="closeExHelp()">Fermer</button></div>
+  <div class="help-body" id="exhelp-body"></div></div>
 <div class="toast" id="toast"></div>
 
 <script>
 "use strict";
 /* ===== Auto-mise à jour (vérifie une version plus récente en ligne au lancement) ===== */
-const APP_VERSION='2026-06-23-11';
+const APP_VERSION='2026-07-07-14';
 (function(){if(location.protocol==='file:')return;
   var tried='';try{tried=new URLSearchParams(location.search).get('v')||'';}catch(e){}
   try{fetch(location.pathname+'?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text();}).then(function(t){
@@ -455,6 +513,65 @@ const LIBRARY=[
   {id:'lib-sl-frontlever',n:"Front lever (travail)",pm:['Dos'],sm:['Abdominaux','Biceps'],rest:120,inc:2.5},
   {id:'lib-sl-dragonflag',n:"Dragon flag",pm:['Abdominaux'],sm:[],rest:90,inc:2.5},
   {id:'lib-sl-toesbar',n:"Toes to bar",pm:['Abdominaux'],sm:[],rest:75,inc:2.5},
+  // Variantes chargées supplémentaires
+  {id:'lib-dc-smith',n:"Développé couché Smith",pm:['Pectoraux'],sm:['Triceps','Deltoïde antérieur'],rest:150,inc:2.5},
+  {id:'lib-chest-press-disques',n:"Chest press à disques (levier)",pm:['Pectoraux'],sm:['Triceps','Deltoïde antérieur'],rest:120,inc:5},
+  {id:'lib-ecarte-poulie-h',n:"Écarté poulie haute",pm:['Pectoraux'],sm:[],rest:90,inc:2.5},
+  {id:'lib-pompes-lest',n:"Pompes lestées",pm:['Pectoraux'],sm:['Triceps','Deltoïde antérieur'],rest:120,inc:2.5},
+  {id:'lib-rowing-machine-disques',n:"Rowing machine à disques (levier)",pm:['Dos'],sm:['Biceps'],rest:120,inc:5},
+  {id:'lib-rowing-machine-pin',n:"Rowing machine à sélecteur (pin)",pm:['Dos'],sm:['Biceps'],rest:120,inc:2.5},
+  {id:'lib-rowing-halt-uni',n:"Rowing haltère un bras",pm:['Dos'],sm:['Biceps'],rest:90,inc:2},
+  {id:'lib-tirage-h-uni',n:"Tirage horizontal un bras poulie",pm:['Dos'],sm:['Biceps'],rest:90,inc:2.5},
+  {id:'lib-tirage-h-machine',n:"Tirage horizontal machine (assis)",pm:['Dos'],sm:['Biceps'],rest:120,inc:2.5},
+  {id:'lib-elev-lat-inc',n:"Élévation latérale banc incliné (haltères)",pm:['Deltoïde latéral'],sm:[],rest:75,inc:2},
+  {id:'lib-elev-lat-poulie-uni',n:"Élévation latérale un bras poulie",pm:['Deltoïde latéral'],sm:[],rest:75,inc:2.5},
+  {id:'lib-dev-ep-smith',n:"Développé épaules Smith",pm:['Deltoïde antérieur'],sm:['Triceps','Deltoïde latéral'],rest:120,inc:2.5},
+  {id:'lib-shrug-halt',n:"Shrug haltères",pm:['Trapèzes'],sm:[],rest:90,inc:2},
+  {id:'lib-curl-marteau-poulie',n:"Curl marteau poulie (corde)",pm:['Biceps'],sm:[],rest:90,inc:2.5},
+  {id:'lib-curl-ez',n:"Curl barre EZ",pm:['Biceps'],sm:[],rest:90,inc:2.5},
+  {id:'lib-curl-spider',n:"Curl araignée (spider)",pm:['Biceps'],sm:[],rest:75,inc:2},
+  {id:'lib-curl-poulie-uni',n:"Curl un bras poulie",pm:['Biceps'],sm:[],rest:75,inc:2.5},
+  {id:'lib-ext-corde-overhead',n:"Extension overhead corde (poulie)",pm:['Triceps'],sm:[],rest:90,inc:2.5},
+  {id:'lib-dips-banc',n:"Dips entre bancs",pm:['Triceps'],sm:['Pectoraux'],rest:90,inc:2.5},
+  {id:'lib-fente-halt',n:"Fentes haltères",pm:['Quadriceps'],sm:['Fessiers','Ischio-jambiers'],rest:120,inc:2},
+  {id:'lib-fente-marchee-halt',n:"Fentes marchées haltères",pm:['Quadriceps'],sm:['Fessiers','Ischio-jambiers'],rest:120,inc:2},
+  {id:'lib-sdt-jt',n:"Soulevé de terre jambes tendues (barre)",pm:['Ischio-jambiers'],sm:['Fessiers','Dos'],rest:150,inc:2.5},
+  {id:'lib-leg-press-uni',n:"Presse à cuisses un pied",pm:['Quadriceps'],sm:['Fessiers'],rest:120,inc:5},
+  {id:'lib-sissy',n:"Sissy squat",pm:['Quadriceps'],sm:[],rest:90,inc:2.5},
+  // Poids du corps / plyométrie (répétitions)
+  {id:'lib-bw-squat',n:"Squat au poids du corps",pm:['Quadriceps'],sm:['Fessiers'],rest:60,inc:2.5},
+  {id:'lib-bw-squat-jump',n:"Squat sauté",pm:['Quadriceps'],sm:['Fessiers','Mollets'],rest:75,inc:2.5},
+  {id:'lib-bw-fente',n:"Fentes (poids du corps)",pm:['Quadriceps'],sm:['Fessiers'],rest:60,inc:2.5},
+  {id:'lib-bw-fente-jump',n:"Fentes sautées",pm:['Quadriceps'],sm:['Fessiers','Mollets'],rest:75,inc:2.5},
+  {id:'lib-bw-pompes-diamant',n:"Pompes diamant",pm:['Triceps'],sm:['Pectoraux'],rest:75,inc:2.5},
+  {id:'lib-bw-pompes-decline',n:"Pompes déclinées",pm:['Pectoraux'],sm:['Triceps','Deltoïde antérieur'],rest:75,inc:2.5},
+  // CrossFit — haltérophilie (barre)
+  {id:'lib-cf-snatch',n:"Arraché (snatch)",pm:['Quadriceps','Fessiers'],sm:['Dos','Trapèzes','Deltoïde antérieur'],rest:180,inc:2.5},
+  {id:'lib-cf-power-snatch',n:"Arraché puissance (power snatch)",pm:['Quadriceps','Fessiers'],sm:['Dos','Trapèzes','Deltoïde antérieur'],rest:180,inc:2.5},
+  {id:'lib-cf-clean',n:"Épaulé (clean)",pm:['Quadriceps','Fessiers'],sm:['Dos','Trapèzes'],rest:180,inc:2.5},
+  {id:'lib-cf-power-clean',n:"Épaulé puissance (power clean)",pm:['Quadriceps','Fessiers'],sm:['Dos','Trapèzes'],rest:180,inc:2.5},
+  {id:'lib-cf-cj',n:"Épaulé-jeté (clean & jerk)",pm:['Quadriceps','Fessiers'],sm:['Deltoïde antérieur','Trapèzes','Triceps'],rest:180,inc:2.5},
+  {id:'lib-cf-jerk',n:"Jeté / push jerk",pm:['Deltoïde antérieur'],sm:['Triceps','Quadriceps'],rest:150,inc:2.5},
+  {id:'lib-cf-push-press',n:"Push press (développé avec impulsion)",pm:['Deltoïde antérieur'],sm:['Triceps','Quadriceps'],rest:150,inc:2.5},
+  {id:'lib-cf-thruster',n:"Thruster",pm:['Quadriceps','Deltoïde antérieur'],sm:['Fessiers','Triceps'],rest:150,inc:2.5},
+  {id:'lib-cf-ohs',n:"Overhead squat (squat bras tendus)",pm:['Quadriceps'],sm:['Fessiers','Deltoïde antérieur','Abdominaux'],rest:150,inc:2.5},
+  // CrossFit — kettlebell / port de charge
+  {id:'lib-cf-kbswing',n:"Kettlebell swing",pm:['Fessiers','Ischio-jambiers'],sm:['Dos','Deltoïde antérieur'],rest:90,inc:4},
+  {id:'lib-cf-goblet',n:"Goblet squat (kettlebell)",pm:['Quadriceps'],sm:['Fessiers'],rest:90,inc:4},
+  {id:'lib-cf-tgu',n:"Turkish get-up",pm:['Abdominaux','Deltoïde antérieur'],sm:['Quadriceps'],rest:120,inc:4},
+  {id:'lib-cf-farmer',n:"Marche du fermier (farmer's carry)",pm:['Trapèzes','Dos'],sm:['Abdominaux'],rest:90,inc:4},
+  // CrossFit — gymnastique / poids du corps
+  {id:'lib-cf-wallball',n:"Wall ball (medicine ball)",pm:['Quadriceps'],sm:['Deltoïde antérieur'],rest:60,inc:1},
+  {id:'lib-cf-boxjump',n:"Box jump (saut sur boîte)",pm:['Quadriceps'],sm:['Fessiers','Mollets'],rest:60,inc:2.5},
+  {id:'lib-cf-ringdips',n:"Dips aux anneaux (ring dips)",pm:['Pectoraux','Triceps'],sm:['Deltoïde antérieur'],rest:120,inc:2.5},
+  {id:'lib-cf-ringrows',n:"Rowing aux anneaux (ring rows)",pm:['Dos'],sm:['Biceps'],rest:90,inc:2.5},
+  {id:'lib-cf-ringmu',n:"Muscle-up aux anneaux (ring)",pm:['Dos','Pectoraux'],sm:['Biceps','Triceps'],rest:180,inc:2.5},
+  {id:'lib-cf-kipping',n:"Traction kipping",pm:['Dos'],sm:['Biceps'],rest:90,inc:2.5},
+  {id:'lib-cf-c2b',n:"Chest-to-bar (poitrine à la barre)",pm:['Dos'],sm:['Biceps'],rest:120,inc:2.5},
+  {id:'lib-cf-ropeclimb',n:"Montée à la corde (grimper)",pm:['Dos'],sm:['Biceps','Abdominaux'],rest:120,inc:2.5},
+  {id:'lib-cf-ghd',n:"GHD sit-up",pm:['Abdominaux'],sm:[],rest:60,inc:2.5},
+  {id:'lib-cf-hswalk',n:"Marche en équilibre (handstand walk)",pm:['Deltoïde antérieur'],sm:['Abdominaux'],rest:90,inc:2.5},
+  {id:'lib-cf-sled',n:"Poussée de traîneau (sled push)",pm:['Quadriceps'],sm:['Fessiers','Mollets'],rest:90,inc:5},
   // Cardio (durée/vitesse/pente/résistance saisies en séance)
   {id:'lib-cardio-marche',n:"Marche (tapis)",cardio:1,fields:['speed','incline'],met:3.5,pm:[],sm:[],rest:0,inc:0},
   {id:'lib-cardio-course',n:"Course / running",cardio:1,fields:['speed','incline'],met:9,pm:[],sm:[],rest:0,inc:0},
@@ -466,6 +583,12 @@ const LIBRARY=[
   {id:'lib-cardio-corde',n:"Corde à sauter",cardio:1,fields:[],met:11,pm:[],sm:[],rest:0,inc:0},
   {id:'lib-cardio-velo-ext',n:"Vélo extérieur",cardio:1,fields:['distance'],met:7,pm:[],sm:[],rest:0,inc:0},
   {id:'lib-cardio-marche-ext',n:"Marche / rando extérieure",cardio:1,fields:['distance'],met:4.3,pm:[],sm:[],rest:0,inc:0},
+  {id:'lib-cardio-burpees',n:"Burpees",cardio:1,fields:[],met:8,pm:[],sm:[],rest:0,inc:0},
+  {id:'lib-cardio-jj',n:"Jumping jacks",cardio:1,fields:[],met:8,pm:[],sm:[],rest:0,inc:0},
+  {id:'lib-cardio-mountain',n:"Mountain climbers",cardio:1,fields:[],met:8,pm:[],sm:[],rest:0,inc:0},
+  {id:'lib-cardio-highknees',n:"Montées de genoux",cardio:1,fields:[],met:8,pm:[],sm:[],rest:0,inc:0},
+  {id:'lib-cardio-assaultbike',n:"Assault bike / air bike",cardio:1,fields:['resistance','distance'],met:9,pm:[],sm:[],rest:0,inc:0},
+  {id:'lib-cardio-skierg',n:"Ski erg",cardio:1,fields:['resistance','distance'],met:9,pm:[],sm:[],rest:0,inc:0},
 ];
 const LIB_BY_ID={};LIBRARY.forEach(e=>LIB_BY_ID[e.id]=e);
 function libDefaults(e){if(e.cardio)return{sets:1,rep:''};if(e.rest>=150)return{sets:4,rep:'6-8'};if(e.rest>=90)return{sets:3,rep:'8-12'};return{sets:3,rep:'12-15'};}
@@ -579,6 +702,21 @@ const CALIB={
   'lib-sl-pullup':{c:0},'lib-sl-dip':{c:0},'lib-sl-muscleup':{c:0},'lib-sl-muscleup-lest':{c:0},
   'lib-sl-pullup-bw':{c:0},'lib-sl-aus':{c:0},'lib-sl-hspu':{c:0},'lib-sl-pistol':{c:0},
   'lib-sl-archer':{c:0},'lib-sl-lsit':{c:0},'lib-sl-frontlever':{c:0},'lib-sl-dragonflag':{c:0},'lib-sl-toesbar':{c:0},
+  // ---- Variantes supplémentaires ----
+  'lib-dc-smith':{a:'bench',c:0.80},'lib-chest-press-disques':{a:'bench',c:0.85},'lib-ecarte-poulie-h':{a:'bench',c:0.18},'lib-pompes-lest':{c:0},
+  'lib-rowing-machine-disques':{a:'row',c:0.95},'lib-rowing-machine-pin':{a:'row',c:0.9},'lib-rowing-halt-uni':{a:'row',c:0.42},
+  'lib-tirage-h-uni':{a:'row',c:0.5},'lib-tirage-h-machine':{a:'row',c:0.9},
+  'lib-elev-lat-inc':{a:'ohp',c:0.10},'lib-elev-lat-poulie-uni':{a:'ohp',c:0.12},'lib-dev-ep-smith':{a:'ohp',c:0.9},'lib-shrug-halt':{a:'row',c:0.5},
+  'lib-curl-marteau-poulie':{a:'row',c:0.40},'lib-curl-ez':{a:'row',c:0.45},'lib-curl-spider':{a:'row',c:0.15},'lib-curl-poulie-uni':{a:'row',c:0.18},
+  'lib-ext-corde-overhead':{a:'bench',c:0.35},'lib-dips-banc':{c:0},
+  'lib-fente-halt':{a:'squat',c:0.3},'lib-fente-marchee-halt':{a:'squat',c:0.3},'lib-sdt-jt':{a:'hinge',c:0.9},'lib-leg-press-uni':{a:'squat',c:1.0},'lib-sissy':{c:0},
+  'lib-bw-squat':{c:0},'lib-bw-squat-jump':{c:0},'lib-bw-fente':{c:0},'lib-bw-fente-jump':{c:0},'lib-bw-pompes-diamant':{c:0},'lib-bw-pompes-decline':{c:0},
+  // ---- CrossFit ----
+  'lib-cf-snatch':{a:'squat',c:0.6},'lib-cf-power-snatch':{a:'squat',c:0.5},'lib-cf-clean':{a:'squat',c:0.9},'lib-cf-power-clean':{a:'squat',c:0.75},'lib-cf-cj':{a:'squat',c:0.85},
+  'lib-cf-jerk':{a:'ohp',c:1.4},'lib-cf-push-press':{a:'ohp',c:1.2},'lib-cf-thruster':{a:'squat',c:0.7},'lib-cf-ohs':{a:'squat',c:0.6},
+  'lib-cf-kbswing':{a:'hinge',c:0.3},'lib-cf-goblet':{a:'squat',c:0.4},'lib-cf-tgu':{a:'ohp',c:0.5},'lib-cf-farmer':{a:'hinge',c:0.5},
+  'lib-cf-wallball':{c:0},'lib-cf-boxjump':{c:0},'lib-cf-ringdips':{c:0},'lib-cf-ringrows':{c:0},'lib-cf-ringmu':{c:0},
+  'lib-cf-kipping':{c:0},'lib-cf-c2b':{c:0},'lib-cf-ropeclimb':{c:0},'lib-cf-ghd':{c:0},'lib-cf-hswalk':{c:0},'lib-cf-sled':{a:'squat',c:1.5},
 };
 function r25(x){return Math.round(x/2.5)*2.5;}
 function defaultWeight(exId){const cal=CALIB[exId];if(cal===null||cal===undefined)return null;
@@ -741,16 +879,18 @@ function renderPicker(){let h=seanceSubBar('log');
 
 function classifyRole(slot){const r=slot.rest||90;return r>=150?'heavy':(r>=110?'comp':'iso');}
 function exMaterial(slot){const n=(slot.n||'').toLowerCase();
-  if(/traction|dips|muscle-?up|pompe|gainage|crunch|relev|hanging|pistol|l-sit|lever|dragon|toes|australien|hspu|archer|roulette/.test(n))return'bodyweight';
+  if(/traction|dips|muscle-?up|pompe|gainage|crunch|relev|hanging|pistol|l-sit|lever|dragon|toes|australien|hspu|archer|roulette|poids du corps|burpee|jumping|saut|mountain|genou|sissy|chaise|wall ball|box|anneaux|ring|kipping|chest-to-bar|ghd|handstand|grimper/.test(n))return'bodyweight';
+  if(/kettlebell|goblet|turkish|fermier|farmer|swing/.test(n))return'kettlebell';
   if(/smith/.test(n))return'smith';
   if(/haltère|haltere/.test(n))return'haltere';
-  if(/poulie|câble|cable|machine|butterfly|pec|chest press|tirage|presse|hack|adducteur|abducteur|leg ext|leg curl|face pull|corde/.test(n))return'machine';
-  if(/barre|squat|soulevé|souleve|rowing|développé|developpe|militaire|rdl|good morning|hip thrust|fente|mollet/.test(n))return'barre';
+  if(/poulie|câble|cable|machine|butterfly|pec|chest press|tirage|presse|hack|adducteur|abducteur|leg ext|leg curl|face pull|corde|traîneau|sled/.test(n))return'machine';
+  if(/barre|squat|soulevé|souleve|rowing|développé|developpe|militaire|rdl|good morning|hip thrust|fente|mollet|arraché|arrache|épaulé|epaule|jeté|jete|thruster|clean|snatch|jerk|push press|overhead/.test(n))return'barre';
   return'machine';}
 const MAT={
   barre:{floor:20,step:2.5,hint:'Poids total : barre (20 kg) + disques'},
   smith:{floor:10,step:2.5,hint:'Poids total : barre guidée (~10 kg) + disques'},
   haltere:{floor:4,step:2,hint:'Par haltère (un seul, pas le cumul)'},
+  kettlebell:{floor:8,step:4,hint:'Poids du kettlebell (un seul)'},
   machine:{floor:2.5,step:2.5,hint:'Charge réglée (sélecteur/disques), hors poids de la machine'},
   bodyweight:{floor:0,step:2.5,hint:'Lest ajouté (0 = poids du corps seul)'},
 };
@@ -822,7 +962,7 @@ function exNameHtml(e){const open=exMenu===e.id;
     <div class="ex-menu-move"><button onclick="exMove('${e.id}',-1)">↑ Monter</button><button onclick="exMove('${e.id}',1)">↓ Descendre</button></div>
     <button class="rm" onclick="exMenuRemove('${e.id}')"><span>🗑</span> Supprimer</button>
   </div>`;}
-  return `<div class="ex-name tap${open?' open':''}" onclick="toggleExMenu('${e.id}')">${esc(e.n)} <span class="exm-caret">⋯</span></div>${m}`;}
+  return `<div class="ex-name-row"><div class="ex-name tap${open?' open':''}" onclick="toggleExMenu('${e.id}')">${esc(e.n)} <span class="exm-caret">⋯</span></div><button class="ex-help" onclick="openExHelp('${e.id}')" aria-label="Aide exercice">?</button></div>${m}`;}
 window.toggleExMenu=function(id){exMenu=(exMenu===id?null:id);renderLogger();};
 window.exMenuChange=function(id){exMenu=null;openLib('logger-replace',id);};
 window.exMenuSuperset=function(id){exMenu=null;openLib('logger-superset',id);};
@@ -1041,6 +1181,63 @@ window.delTpl=async function(){if(!confirm('Supprimer cette séance perso ?'))re
 
 /* bibliothèque (overlay, partagée builder + logger) */
 function openLib(ctx,slotId){libMode={ctx:ctx||'builder',slotId:slotId};$('#lib-title').textContent=(ctx==='logger-replace')?'Remplacer l\u2019exercice':(ctx==='logger-superset'?'Ajouter en superset':'Ajouter un exercice');$('#lib-search').value='';$('#libsheet').classList.add('show');renderLibList();}
+window.openHelp=function(){$('#helpsheet').classList.add('show');window.scrollTo(0,0);};
+window.closeHelp=function(){$('#helpsheet').classList.remove('show');};
+function patternOf(slot){if(slot.cardio)return'cardio';
+  const n=(slot.n||'').toLowerCase();const pm=(slot.pm&&slot.pm[0])||'';
+  if(/arraché|arrache|épaulé|epaule|snatch|clean|jerk|thruster/.test(n))return'olympic';
+  if(/anneaux|ring|kipping|chest-to-bar|handstand|box jump|grimper|wall ball|ghd|dragon|l-sit|toes to bar|pistol|muscle-?up/.test(n))return'gym_bw';
+  if(pm==='Pectoraux'){if(/écarté|ecarte|butterfly|pec deck|fly/.test(n))return'iso_pec';return'press_h';}
+  if(pm==='Deltoïde antérieur')return'press_v';
+  if(pm==='Deltoïde latéral')return'iso_delt_lat';
+  if(pm==='Deltoïde postérieur')return'iso_delt_rear';
+  if(pm==='Trapèzes')return'trap';
+  if(pm==='Dos'){if(/traction|pull-?up|tirage vertical|supination|prise large|nuque|pulldown/.test(n))return'pull_v';return'pull_h';}
+  if(pm==='Biceps')return'iso_bi';
+  if(pm==='Triceps'){if(/dips/.test(n))return'press_h';return'iso_tri';}
+  if(pm==='Quadriceps'){if(/leg ext|extension des jambes|sissy/.test(n))return'iso_quad';return'squat';}
+  if(pm==='Ischio-jambiers'){if(/leg curl/.test(n))return'iso_ham';return'hinge';}
+  if(pm==='Fessiers'){if(/hip thrust/.test(n))return'glute';return'hinge';}
+  if(pm==='Mollets')return'calf';
+  if(pm==='Abdominaux')return'abs';
+  return'generic';}
+const EXHELP={
+ press_h:{t:["Serre et abaisse les omoplates (ancrage) et garde-les plaquées tout le mouvement","Pieds bien ancrés au sol, léger cambré naturel du bas du dos","Descends la barre vers le bas des pectoraux, pas vers le cou","Coudes à ~45-60° du buste (ni collés, ni ouverts à 90°)","Poignets alignés au-dessus des coudes, amplitude contrôlée"],f:["Rétracte les omoplates AVANT de descendre pour mettre les pecs en tension","Écartement des mains ~1,5× la largeur d'épaules","Pense à « rapprocher les coudes » plutôt qu'à « pousser la barre »","Marque une courte pause en bas sans relâcher la tension"],p:"Gêne à l'épaule : échauffe les épaules (rotations, band pull-apart), renforce les rotateurs externes et le dentelé, évite de descendre coudes trop ouverts ou trop bas si ça pince, garde les omoplates serrées. Douleur vive, dans l'articulation ou persistante → arrête et consulte un kiné ou médecin du sport."},
+ iso_pec:{t:["Omoplates serrées, coudes légèrement fléchis et fixes","Amène les mains l'une vers l'autre en « serrant » avec les pecs"],f:["Cherche l'étirement contrôlé en ouverture puis la contraction au centre","Charges légères à modérées, tempo contrôlé"],p:"Si l'avant de l'épaule tire, réduis l'ouverture (amplitude) et la charge."},
+ press_v:{t:["Gainage abdos + fessiers serrés, pas de cambré excessif du bas du dos","Charge au-dessus des épaules, trajectoire verticale","La tête avance légèrement en fin de poussée (barre au-dessus du crâne)"],f:["Descends jusqu'au menton / clavicules, contrôle","Ne verrouille pas violemment en haut"],p:"Épaule qui pince en haut → réduis l'amplitude ou passe en prise neutre (haltères). Bas du dos qui cambre → resserre le gainage, baisse la charge. Douleur persistante → consulte."},
+ pull_v:{t:["Amorce en ABAISSANT les omoplates, pas en tirant d'abord avec les bras","Poitrine vers la barre, coudes vers le bas et l'arrière","Évite le balancier (sauf kipping assumé)","Contrôle la descente jusqu'à l'extension"],f:["Pense « coudes vers les poches arrière »","Marque le haut, sens le dos travailler plutôt que les biceps"],p:"Épaule ou coude qui tire → échauffe, et si l'extension complète en bas force trop, réduis un peu l'amplitude. Douleur persistante → consulte."},
+ pull_h:{t:["Dos neutre et gainé, buste stable","Tire vers le nombril / bas des côtes, coudes le long du corps","Amorce par les omoplates (rétraction) avant les bras"],f:["Marque 1 s en contraction, serre les omoplates","Ne tire pas d'abord avec les biceps"],p:"Bas du dos sensible : soutiens le buste (banc, appui poitrine) et garde le dos neutre ; si le dos s'arrondit, baisse la charge. Douleur lombaire → consulte."},
+ squat:{t:["Pieds ~largeur d'épaules, orteils légèrement ouverts","Descends entre les jambes, genoux dans l'axe des pieds","Dos neutre, gainage, poids réparti sur tout le pied (talons ancrés)","Descends à une profondeur que tu contrôles"],f:["Contrôle la descente, reste sur toute la plante du pied","Cherche la profondeur (cuisses ~parallèles) si ta mobilité le permet"],p:"Genoux qui rentrent → pousse-les vers l'extérieur. Bas du dos qui s'arrondit en bas → réduis l'amplitude ou travaille la mobilité. Douleur au genou ou au dos qui persiste → consulte."},
+ hinge:{t:["Dos NEUTRE et gainé du début à la fin (jamais arrondi)","Mouvement aux hanches : pousse les fesses vers l'arrière","Garde la charge près du corps","Amplitude limitée par ta souplesse d'ischios SANS arrondir le dos"],f:["Pense « repousser un mur derrière toi avec les fesses »","Genoux légèrement fléchis et fixes, sens l'étirement des ischios","Contracte les fessiers en haut sans hyperextension"],p:"C'est le mouvement le plus exigeant pour les lombaires. Si ton dos s'arrondit ou te fait mal, réduis fortement la charge et l'amplitude, renforce le gainage, ou choisis une variante qui te soulage. Douleur lombaire (surtout si elle descend dans la jambe) → arrête et consulte avant de charger."},
+ glute:{t:["Menton légèrement rentré, côtes basses","Pousse par les talons, verrouille les fessiers en haut","Ne cambre pas le bas du dos en fin de poussée"],f:["Cherche la contraction des fessiers en haut, pause 1 s"],p:"Si le bas du dos travaille plus que les fessiers, réduis l'amplitude haute et le cambré."},
+ iso_delt_lat:{t:["Léger buste, coudes très légèrement fléchis et fixes","Monte sur les côtés jusqu'à hauteur d'épaules, pas plus haut","Pas d'élan du corps"],f:["Mène le mouvement avec les COUDES, pas les mains","Ne hausse pas les épaules (relâche les trapèzes), charges légères"],p:""},
+ iso_delt_rear:{t:["Buste penché, coudes légèrement fléchis","Écarte en menant par les coudes"],f:["Sens l'arrière de l'épaule, pas les trapèzes ; charges légères"],p:""},
+ iso_bi:{t:["Coudes fixes le long du corps","Pas d'élan du dos ni des épaules","Amplitude complète, contrôle la descente (négatif)"],f:["Contracte en haut, sens le biceps sur toute l'amplitude"],p:"Douleur au coude/tendon → réduis la charge, évite l'extension brutale en bas."},
+ iso_tri:{t:["Coudes fixes, seul l'avant-bras bouge","Verrouille l'extension complète","Contrôle le retour"],f:["Cherche la contraction en fin d'extension"],p:"Douleur au coude → réduis la charge, évite de verrouiller sèchement."},
+ iso_quad:{t:["Contrôle, pas d'à-coups","Pause courte en haut, contraction"],f:["Sens le quadriceps, descente lente"],p:"Gêne au genou (surtout rotule) → réduis l'amplitude haute / la charge ; douleur persistante → consulte."},
+ iso_ham:{t:["Contrôle, pas d'élan des hanches (bassin qui reste posé)","Amplitude complète"],f:["Sens l'ischio, marque la contraction"],p:"Tiraillement / crampe → échauffe et baisse la charge."},
+ calf:{t:["Amplitude complète : étirement en bas, montée maximale en haut","Marque une pause en haut et en bas","Contrôle, pas de rebond"],f:["Sens l'étirement puis la contraction du mollet"],p:""},
+ abs:{t:["Contrôle, expire en contractant","Ne tire pas sur ta nuque avec les mains","Travaille les abdos, pas l'élan des hanches (sauf exo dédié)"],f:["Cherche à « enrouler » plutôt qu'à tirer"],p:"Si le bas du dos pince sur les relevés de jambes, garde-le plaqué et réduis l'amplitude."},
+ trap:{t:["Monte les épaules droit vers les oreilles","Pause en haut, pas de rotation des épaules"],f:["Sens les trapèzes, contrôle la descente"],p:""},
+ olympic:{t:["Mouvement TECHNIQUE : apprends-le d'abord à charge légère (barre à vide)","Barre près du corps, extension complète des hanches, réception gainée","Idéalement encadré par un coach au début"],f:["La technique prime sur la charge ; la puissance vient du bas du corps, pas des bras"],p:"Ces levées chargent poignets, épaules, dos et genoux : ne monte pas en charge tant que la technique n'est pas propre. Toute douleur → arrête et fais corriger ta technique."},
+ gym_bw:{t:["Progresse GRADUELLEMENT (régressions avant la version complète)","Gainage serré, mouvement contrôlé plutôt que subi","Qualité avant quantité"],f:["Maîtrise l'amplitude complète avant d'ajouter des reps ou du lest"],p:"Ces mouvements sollicitent fort épaules / poignets / coudes : échauffe-les et n'insiste pas sur une douleur articulaire."},
+ cardio:{t:["Échauffe-toi progressivement (montée d'intensité)","Choisis une intensité tenable sur la durée visée","Hydrate-toi"],f:[],p:"Douleur thoracique, essoufflement anormal ou malaise → arrête immédiatement."},
+ generic:{t:["Contrôle le mouvement sur toute l'amplitude","Gainage stable, pas d'élan","Charge adaptée pour garder une bonne exécution"],f:["Concentre-toi sur le muscle ciblé"],p:"Douleur articulaire ou persistante → arrête et consulte un professionnel."}
+};
+const EXHELP_ID={
+ 'l-front':{extra:"Front squat : garde les COUDES HAUTS (bras ~parallèles au sol) et la barre posée sur le haut des épaules / clavicules, pas dans les mains. Si la prise ou les poignets lâchent avant les cuisses, c'est une limite de position, pas de force : le hack squat ou la presse te laisseront charger davantage."},
+ 'lib-front-squat':{extra:"Coudes hauts, barre sur les épaules ; si la prise bride avant les jambes, bascule sur hack squat / presse."}
+};
+window.openExHelp=function(id){
+  const slot=(draft&&draft.ex&&draft.ex.find(function(s){return s.id===id;}))||{id:id,n:((exInfo(id)||{}).n)||'Exercice',cardio:((exInfo(id)||{}).cardio),pm:((exInfo(id)||{}).pm)};
+  const h=EXHELP[patternOf(slot)]||EXHELP.generic;const idov=EXHELP_ID[id];
+  var html='';
+  if(idov&&idov.extra)html+='<div class="eh-note">'+idov.extra+'</div>';
+  if(h.t&&h.t.length)html+='<div class="eh-sec">Exécution</div><ul>'+h.t.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>';
+  if(h.f&&h.f.length)html+='<div class="eh-sec">Mieux sentir le muscle</div><ul>'+h.f.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>';
+  if(h.p)html+='<div class="eh-sec">Gêne ou douleur</div><p>'+h.p+'</p>';
+  $('#exhelp-title').textContent=slot.n;$('#exhelp-body').innerHTML=html;$('#exhelpsheet').classList.add('show');window.scrollTo(0,0);};
+window.closeExHelp=function(){$('#exhelpsheet').classList.remove('show');};
 window.openLib=openLib;
 window.closeLib=function(){$('#libsheet').classList.remove('show');};
 window.libPick=function(id){const m=libMode||{ctx:'builder'};
